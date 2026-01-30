@@ -1,6 +1,6 @@
-"""
-main.py - FastAPI app and endpoints
-"""
+
+#main.py - FastAPI app and endpoints
+
 import re
 import json
 import logging
@@ -28,6 +28,7 @@ from utils import generate_job_id, generate_candidate_id, RateLimiter
 from pdf_extractor import PDFExtractor
 from resume_parser import ResumeParser
 
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -36,7 +37,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# ==================== Application State ====================
+#  Application State 
 
 class AppState:
     """Application state container."""
@@ -53,7 +54,7 @@ class AppState:
 app_state = AppState()
 
 
-# ==================== Lifespan Management ====================
+#  Lifespan Management 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -75,7 +76,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down ATS Evaluation Engine...")
 
 
-# ==================== FastAPI App ====================
+#  FastAPI App 
 
 app = FastAPI(
     title="ATS Evaluation Engine",
@@ -94,7 +95,7 @@ app.add_middleware(
 )
 
 
-# ==================== Exception Handlers ====================
+#  Exception Handlers 
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
@@ -120,7 +121,7 @@ async def general_exception_handler(request, exc):
     )
 
 
-# ==================== Dependencies ====================
+#  Dependencies 
 
 async def get_rag_processor() -> RAGProcessor:
     """Dependency to get RAG processor."""
@@ -146,7 +147,7 @@ async def check_rate_limit(client_id: str = Query(default="default")):
     return client_id
 
 
-# ==================== Health Check Endpoints ====================
+#  Health Check Endpoints 
 
 @app.get("/", response_model=HealthCheckResponse, tags=["Health"])
 async def root():
@@ -169,7 +170,7 @@ async def health_check():
     return await root()
 
 
-# ==================== Job Description Endpoints ====================
+# Job Description Endpoints 
 
 @app.post("/api/v1/jobs", response_model=UploadResponse, tags=["Jobs"])
 async def create_job(
@@ -288,7 +289,7 @@ async def delete_job(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ==================== Resume Endpoints ====================
+# Resume Endpoints 
 
 @app.post("/api/v1/jobs/{job_id}/resumes", response_model=UploadResponse, tags=["Resumes"])
 async def upload_resume(
