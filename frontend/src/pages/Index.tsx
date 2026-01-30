@@ -14,13 +14,14 @@ import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-const STORAGE_KEY = 'resumescreen_started';
+const STORAGE_KEY = 'resumescreen_started_session';
 const JOB_ID_KEY = 'resumescreen_job_id';
 
 const Index = () => {
   const [hasStarted, setHasStarted] = useState<boolean>(() => {
-    return localStorage.getItem(STORAGE_KEY) === 'true';
+    return sessionStorage.getItem(STORAGE_KEY) === 'true';
   });
+  
 
   const [jobId, setJobId] = useState<string | null>(() => {
     const storedId = localStorage.getItem(JOB_ID_KEY);
@@ -36,13 +37,6 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
-
-  // Fetch job description and candidates when job ID changes
-  useEffect(() => {
-    if (!jobId) return;
-    fetchJobDescription();
-    fetchCandidates();
-  }, [jobId]);
 
   // Fetch job description safely
   const fetchJobDescription = async () => {
@@ -103,9 +97,10 @@ const Index = () => {
   };
 
   const handleStart = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    sessionStorage.setItem(STORAGE_KEY, 'true');
     setHasStarted(true);
   };
+  
 
   const handleJobDescriptionSave = async (updatedJob: JobDescription) => {
     setIsLoading(true);
@@ -162,37 +157,6 @@ const Index = () => {
     });
   };
 
-  const handleEvaluate = async () => {
-    if (!jobId) return;
-    setIsEvaluating(true);
-    try {
-      const response = await apiService.evaluateCandidates(jobId.toString());
-      const mappedCandidates: Candidate[] = response.candidates.map((c) => ({
-        id: c.candidate_id,
-        name: c.candidate_name,
-        roleLevel: c.role_level,
-        scores: {
-          skills_score: c.scores.skills_score,
-          experience_score: c.scores.experience_score,
-          education_score: c.scores.education_score,
-          final_score: c.scores.final_score,
-        },
-        matchedSkills: c.matched_skills || [],
-        missingSkills: c.missing_skills || [],
-        experienceSummary: c.relevant_experience || '',
-        strengths: c.strengths || [],
-        weaknesses: c.weaknesses || [],
-        confidenceNote: c.confidence_notes || '',
-        recommendation: c.overall_recommendation,
-      }));
-      setCandidates(mappedCandidates);
-      toast.success('Evaluation completed');
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Evaluation failed. Make sure you have uploaded resumes.');
-    } finally {
-      setIsEvaluating(false);
-    }
-  };
 
   const handleCandidateSelect = async (candidate: Candidate) => {
     if (!jobId) return;
@@ -269,21 +233,7 @@ const Index = () => {
               jobId={jobId?.toString()}
             />
 
-            {candidates.length > 0 && (
-              <Button
-                onClick={handleEvaluate}
-                className="w-full gap-2 py-6 text-lg"
-                disabled={isEvaluating}
-                variant="default"
-              >
-                {isEvaluating ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Play className="w-5 h-5" />
-                )}
-                {isEvaluating ? 'Evaluating...' : 'Run AI Evaluation'}
-              </Button>
-            )}
+            
           </div>
 
           {/* Right Column: Results */}
